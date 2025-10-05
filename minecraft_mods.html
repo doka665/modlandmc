@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Майнкрафт Моды</title>
+    <style>
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 18px;
+        }
+        .tab {
+            padding: 18px 48px;
+            font-size: 1.25rem;
+            border-radius: 32px;
+            background: #142040;
+            color: #6ca0ff;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(30,46,90,0.10);
+            transition: background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.3s;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .tab.active {
+            background: #23376b;
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 4px 24px rgba(30,46,90,0.18);
+        }
+        .tab:hover {
+            background: #1e2e5a;
+            color: #fff;
+            transform: scale(1.04);
+        }
+        .tab-content {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(.42,0,.58,1), transform 0.5s cubic-bezier(.42,0,.58,1);
+        }
+        .tab-content.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: none;
+            transition-delay: 0.1s;
+        }
+        .animated-title {
+            opacity: 0;
+            transform: translateY(-32px);
+            letter-spacing: 0.18em;
+            filter: blur(2px) brightness(1.1);
+            text-shadow: 0 0 18px #6ca0ff33;
+            animation: titleFadeIn 2.2s cubic-bezier(.42,0,.58,1) 0.6s forwards;
+        }
+        @keyframes titleFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-32px);
+                letter-spacing: 0.18em;
+                filter: blur(2px) brightness(1.1);
+                text-shadow: 0 0 18px #6ca0ff33;
+            }
+            60% {
+                opacity: 0.8;
+                transform: translateY(-8px);
+                letter-spacing: 0.12em;
+                filter: blur(0.5px) brightness(1.05);
+                text-shadow: 0 0 12px #6ca0ff55;
+            }
+            100% {
+                opacity: 1;
+                transform: none;
+                letter-spacing: 0.04em;
+                filter: none;
+                text-shadow: 0 0 0 #6ca0ff00;
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #101a2b;
+            margin: 0;
+            overflow: hidden;
+        }
+        #animated-bg {
+            position: fixed;
+            left: 0; top: 0; right: 0; bottom: 0;
+            z-index: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+        }
+        /* Прелоадер */
+        #preloader {
+            position: fixed;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #101a2b 60%, #23376b 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s;
+        }
+        .loader {
+            width: 64px; height: 64px;
+            border: 8px solid #23376b;
+            border-top: 8px solid #6ca0ff;
+            border-radius: 50%;
+            animation: spin 1.1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Анимация появления */
+        .container, .mods-list, .profile-icon {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s cubic-bezier(.42,0,.58,1) 0.2s forwards;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #101a2b;
+            margin: 0;
+        }
+        .container {
+            max-width: 650px;
+            margin: 60px auto;
+            background: rgba(24,31,50,0.55);
+            padding: 48px 40px 32px 40px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(30,46,90,0.25), 0 1.5px 8px 0 rgba(30,46,90,0.12);
+            border: 1.5px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
+            transition: box-shadow 0.3s;
+        }
+        h1 {
+            text-align: center;
+            color: #1e2e5a;
+            font-size: 2.4rem;
+            letter-spacing: 2px;
+            margin-bottom: 32px;
+        }
+        .profile-icon {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1e2e5a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+            transition: background 0.3s, transform 0.3s;
+        }
+        .profile-icon:hover {
+            background: #23376b;
+            transform: scale(1.08) rotate(-8deg);
+        }
+        .profile-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: #fff;
+            transition: fill 0.3s;
+        }
+        .mods-list {
+            margin: 0 auto;
+            max-width: 520px;
+            padding: 0;
+            list-style: none;
+        }
+        .mod-item {
+            background: #142040;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 22px 28px;
+            box-shadow: 0 2px 10px rgba(30,46,90,0.12);
+            color: #e3e8f7;
+            font-size: 1.08rem;
+            transition: box-shadow 0.3s, transform 0.3s, background 0.3s;
+        }
+        .mod-item:hover {
+            box-shadow: 0 6px 24px rgba(30,46,90,0.22);
+            background: #23376b;
+            transform: translateY(-4px) scale(1.03);
+        }
+        .mod-item strong {
+            color: #6ca0ff;
+            font-size: 1.15rem;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .mod-item:hover strong {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="animated-bg"></canvas>
+    <div id="preloader">
+        <div class="loader"></div>
+    </div>
+    <div class="profile-icon" title="Профиль" onclick="window.location.href='profile.html'">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 8-4 8-4s8 0 8 4v2H4v-2z"/></svg>
+    </div>
+    <div class="container">
+    <h1 class="animated-title">Майнкрафт Моды</h1>
+    <div class="tabs">
+        <button class="tab active" data-tab="main">Главная</button>
+        <button class="tab" data-tab="mods">Моды</button>
+    </div>
+    <div id="main" class="tab-content active">
+        <p style="text-align:center;font-size:1.15rem;color:#e3e8f7;">Добро пожаловать на сайт с модами для Minecraft!</p>
+    </div>
+    <div id="mods" class="tab-content">
+        <ul class="mods-list">
+            <li class="mod-item" style="cursor:pointer;" onclick="window.location.href='mod_optifine.html'">
+                <strong>OptiFine</strong><br>
+                Улучшает графику и производительность Minecraft.
+            </li>
+            <li class="mod-item" style="cursor:pointer;" onclick="window.location.href='mod_jei.html'">
+                <strong>Just Enough Items (JEI)</strong><br>
+                Удобный просмотр рецептов и предметов.
+            </li>
+            <li class="mod-item" style="cursor:pointer;" onclick="window.location.href='mod_journeymap.html'">
+                <strong>JourneyMap</strong><br>
+                Карта мира с возможностью отмечать точки.
+            </li>
+            <li class="mod-item" style="cursor:pointer;" onclick="window.location.href='mod_industrialcraft2.html'">
+                <strong>IndustrialCraft 2</strong><br>
+                Мод на электричество, механизмы и новые ресурсы.
+            </li>
+            <li class="mod-item" style="cursor:pointer;" onclick="window.location.href='mod_biomesoplenty.html'">
+                <strong>Biomes O' Plenty</strong><br>
+                Добавляет множество новых биомов.
+            </li>
+        </ul>
+    </div>
+    </div>
+    <script>
+    // Liquid glass animated background
+    const canvas = document.getElementById('animated-bg');
+    const ctx = canvas.getContext('2d');
+    let w = window.innerWidth, h = window.innerHeight;
+    canvas.width = w; canvas.height = h;
+    let mouse = {x: w/2, y: h/2};
+    window.addEventListener('resize', () => {
+        w = window.innerWidth; h = window.innerHeight;
+        canvas.width = w; canvas.height = h;
+    });
+    document.addEventListener('mousemove', e => {
+        mouse.x = e.clientX; mouse.y = e.clientY;
+    });
+    // Liquid glass blobs
+    const blobs = Array.from({length: 7}, (_,i) => ({
+        x: Math.random()*w, y: Math.random()*h,
+        r: 120+Math.random()*60,
+        dx: (Math.random()-0.5)*1.2, dy: (Math.random()-0.5)*1.2,
+        hue: 210+Math.random()*60
+    }));
+    function draw() {
+        ctx.clearRect(0,0,w,h);
+        blobs.forEach(b => {
+            // движение к мыши
+            b.x += b.dx + (mouse.x-b.x)*0.0007;
+            b.y += b.dy + (mouse.y-b.y)*0.0007;
+            if(b.x<0||b.x>w) b.dx*=-1;
+            if(b.y<0||b.y>h) b.dy*=-1;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(${30+Math.sin(b.hue)*30},${60+Math.cos(b.hue)*60},${180+b.hue%40},0.18)`;
+            ctx.shadowColor = `rgba(30,46,90,0.22)`;
+            ctx.shadowBlur = 32;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+    // Прелоадер
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.getElementById('preloader').style.opacity = '0';
+            setTimeout(function() {
+                document.getElementById('preloader').style.display = 'none';
+            }, 600);
+        }, 900);
+    });
+    // Плавный переход между вкладками
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            tab.classList.add('active');
+            setTimeout(() => {
+                document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
+            }, 60);
+        });
+    });
+    // ...existing code...
+    </script>
+</body>
+</html>
